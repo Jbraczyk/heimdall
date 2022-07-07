@@ -11,9 +11,9 @@ const fs = require('fs')
 const conf = require('./config.json')
 const crypto = require('crypto')
 
-bot.on('ready', function () {
-  bot.on('message', (msg) => {
-    msg.content === '!syncMe' ? syncMe(msg.author) : ''
+bot.on('ready', () => {
+  bot.on('message', message => {
+    message.content === '!syncMe' ? syncMe(message.author) : ''
   })
   synchronize()
 })
@@ -25,45 +25,42 @@ bot.login(token)
  * @param  {[object]} author [Author who send msg]
  * @return {[void]}  [Bot send message if fail || succeed]
  */
-const syncMe = (author) => new Promise((resolve, reject) => {
-  getKey().then((key) => {
-    fetch(conf.host + conf.syncMeEndpoint + author.id, {
-      method: 'POST',
-      body: JSON.stringify({ key: key, avatar: author.avatar }),
-      headers: { 'Content-Type': 'application/json' },
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json === 'notfound') author.send('I can\'t')
-        if (json === 'updated') author.send('Synched')
-      })
+const syncMe = (author) => new Promise(async(resolve, reject) => {
+  const key = await getKey()
+  fetch(conf.host + conf.syncMeEndpoint + author.id, {
+    method: 'POST',
+    body: JSON.stringify({ key: key, avatar: author.avatar }),
+    headers: { 'Content-Type': 'application/json' },
   })
+    .then((res) => res.json())
+    .then((json) => {
+      if (json === 'notfound') author.send(`I can't`)
+      if (json === 'updated') author.send('Synched')
+    })
 })
+
 
 /**
  * [synchronize ~ Synchronize our servers roles / users roles from this bot]
  */
 const synchronize = () => {
-  // - Every minutes
-  schedule.scheduleJob('*/1 * * * *', () => {
-    getData().then((data) => {
-      const date = new Date()
-      if (conf.env === 'dev') {
-        console.trace(
-          date.getHours() + ':' + date.getMinutes() + ' ~ getData called'
-        )
-      }
-      getKey().then((key) => {
-        data.key = key
-        sendData(data)
-          .then((res) => res.json())
-          .then((json) => {
-            if (conf.env === 'dev') {
-              console.log(json)
-            }
-          })
+  schedule.scheduleJob('*/1 * * * *', async() => {
+    const data = await getData()
+    const date = new Date()
+    if (conf.env === 'dev') {
+      console.trace(
+        date.getHours() + ':' + date.getMinutes() + ' ~ getData called'
+      )
+    }
+    const key = await getKey()
+    data.key = key
+    sendData(data)
+      .then((res) => res.json())
+      .then((json) => {
+        if (conf.env === 'dev') {
+          console.log(json)
+        }
       })
-    })
   })
 }
 
@@ -96,53 +93,31 @@ const getKey = () => new Promise((resolve, reject) => {
  * @return {[promise]} [Return promise when getUsersData and getRolesData are resolved, then resolve with array of objects]
  */
 const getData = () => new Promise((resolve, reject) => {
-  Promise.all([getUsersData(), getRolesData()]).then((values) => {
-    resolve({ users: values[0], roles: values[1] })
-  })
+  Promise.all([getUsersData(), getRolesData()]).then((values) => resolve({ users: values[0], roles: values[1] }))
 })
 
 /**
  * [getUsersData ~ Get users data from server]
  * @return {[Promise]} [Return array of users {id,nickname,roles}]
  */
-const getUsersData = () => new Promise((resolve, reject) => {
-  bot.guilds.cache
-    .get(guildId)
-    .members.fetch()
-    .then((usersRaw) => {
-      const users = usersRaw.map((user) => ({
-        id: user.id,
-        nickname: user.user.username,
-        roles: user.roles.cache.map((r) => ({ id: r.id, name: r.name })),
-      }))
-      if (conf.env === 'dev') {
-        fs.writeFile('users.json', JSON.stringify(users), 'utf8', () => {
-          console.log('Users writed')
-        })
-      }
-      resolve(users)
-    })
+const getUsersData = () => new Promise(async(resolve, reject) => {
+  const usersRaw = await bot.guilds.cache.get(guildId).members.fetch()
+  const users = usersRaw.map((user) => ({ id: user.id, nickname: user.user.username, roles: user.roles.cache.map((r) => ({ id: r.id, name: r.name })) }))
+  if (conf.env === 'dev') {
+    fs.writeFile('users.json', JSON.stringify(users), 'utf8', () => console.log('Users writed'))
+  }
+  resolve(users)
 })
 
 /**
  * [getRolesData ~ Get roles from server]
  * @return {[promise]} [Return array of roles {id,name,color}]
  */
-const getRolesData = () => new Promise((resolve, reject) => {
-  bot.guilds.cache
-    .get(guildId)
-    .roles.fetch()
-    .then((rolesRaw) => {
-      const roles = rolesRaw.map((role) => ({
-        id: role.id,
-        title: role.name,
-        color: role.hexColor,
-      }))
-      if (conf.env === 'dev') {
-        fs.writeFile('roles.json', JSON.stringify(roles), 'utf8', () => {
-          console.log('Roles writed')
-        })
-      }
-      resolve(roles)
-    })
+const getRolesData = () => new Promise(async(resolve, reject) => {
+  const rolesRaw = await bot.guilds.cache.get(guildId).roles.fetch()
+  const roles = rolesRaw.map((role) => ({ id: role.id, title: role.name, color: role.hexColor }))
+  if (conf.env === 'dev') {
+    fs.writeFile('roles.json', JSON.stringify(roles), 'utf8', () => console.log('Roles writed'))
+  }
+  resolve(roles)
 })

@@ -16,16 +16,13 @@ const crypto = require('crypto')
  * [getKey ~ Get key to server from password and bot_key]
  * @return {[string]} [Hash from key]
  */
-const getKey = ()  => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(conf.keyFile, 'utf-8', (err, data) => {
-      if (err) reject(err)
-      let password = crypto.scryptSync(conf.password, data, 64).toString('hex')
-      resolve(password)
-    })
+const getKey = () => new Promise((resolve, reject) => {
+  fs.readFile(conf.keyFile, 'utf-8', (err, data) => {
+    if (err) reject(err)
+    const password = crypto.scryptSync(conf.password, data, 64).toString('hex')
+    resolve(password)
   })
-}
-
+})
 
 getKey()
   .then(key => {
