@@ -17,24 +17,24 @@ const crypto = require('crypto')
  * @return {[string]} [Hash from key]
  */
 const getKey = ()  => {
-     return new Promise((resolve, reject) => {
-         fs.readFile(conf.keyFile, 'utf-8', (err, data) => {
-             if (err) reject(err)
-             let password = crypto.scryptSync(conf.password, data, 64).toString('hex')
-             resolve(password)
-         })
-     })
- }
+  return new Promise((resolve, reject) => {
+    fs.readFile(conf.keyFile, 'utf-8', (err, data) => {
+      if (err) reject(err)
+      let password = crypto.scryptSync(conf.password, data, 64).toString('hex')
+      resolve(password)
+    })
+  })
+}
 
 
 getKey()
-    .then(key => {
-        data.key = key
-        fetch(conf.host + conf.endpoint, {
-            method: 'POST',
-            body:    JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' },
-        })
-        .then(res => res.json())
-        .then(json => console.log(json))
+  .then(key => {
+    data.key = key
+    fetch(conf.host + conf.endpoint, {
+      method: 'POST',
+      body:    JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
     })
+      .then(res => res.json())
+      .then(json => console.log(json))
+  })

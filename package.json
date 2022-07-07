@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
   "devDependencies": {
     "bcrypt": "^5.0.1",
     "discord.js": "^13.8.0",
+    "eslint": "^8.19.0",
     "node-schedule": "^2.1.0"
   },
   "scripts": {
