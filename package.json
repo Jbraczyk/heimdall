@@ -1,0 +1,25 @@
+{
+  "name": "heimdall",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "bcrypt": "^5.0.1",
+    "discord.js": "^13.8.0",
+    "node-schedule": "^2.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbraczyk/heimdall.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jbraczyk/heimdall/issues"
+  },
+  "homepage": "https://github.com/jbraczyk/heimdall#readme"
+}
