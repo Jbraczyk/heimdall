@@ -114,3 +114,5 @@ config.json
 channels.json
 
 bot_key
+
+package-lock.json
